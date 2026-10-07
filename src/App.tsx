@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Card, Title, AreaChart, BarChart, Table, TableHead, TableRow, TableHeaderCell, TableBody, TableCell, Metric, Text, DonutChart, Flex, ProgressBar } from "@tremor/react";
+import logo from "./assets/LogoBSJ.png";
 
 const monthlyData = [
   { bulan: "Jan", omset: 120, collection: 100 },
@@ -9,9 +10,15 @@ const monthlyData = [
 ];
 
 const omsetData = [
-  { nama: "Budi - Jabar", ach_omset: 94, ach_coll: 88 },
-  { nama: "Santi - Jateng", ach_omset: 120, ach_coll: 110 },
-  { nama: "Agus - Jatim", ach_omset: 66, ach_coll: 55 },
+  { nama: "Budi - Jabar", trg_omset: 94, ach_omset: 88, ach_percent: 93 },
+  { nama: "Santi - Jateng", trg_omset: 120, ach_omset: 110, ach_percent: 92 },
+  { nama: "Agus - Jatim", trg_omset: 66, ach_omset: 55, ach_percent: 83 },
+];
+
+const collectionData = [
+  { nama: "Budi - Jabar", trg_coll: 100, ach_coll: 95, ach_percent: 95 },
+  { nama: "Santi - Jateng", trg_coll: 150, ach_coll: 80, ach_percent: 53 },
+  { nama: "Agus - Jatim", trg_coll: 95, ach_coll: 30, ach_percent: 32 },
 ];
 
 export default function App() {
@@ -35,7 +42,9 @@ export default function App() {
 
       <aside className={`fixed inset-y-0 left-0 z-20 flex w-64 flex-col bg-slate-950 px-5 py-6 text-white transition-transform md:sticky md:top-0 md:h-screen md:translate-x-0 ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="mb-9 flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-indigo-500 font-bold">B</div>
+          <div className="grid h-10 w-10 place-items-center rounded-xl bg-white font-bold">
+            <img src={logo} alt="Logo" className="h-8 w-8 object-contain" />
+          </div>
           <div>
             <p className="font-semibold">DASHBOARD</p>
             <p className="text-xs text-slate-400">PT Buana Setia Jaya</p>
@@ -66,7 +75,7 @@ export default function App() {
       <main className="min-w-0 flex-1 p-4 pt-16 md:p-6 lg:p-8">
         <div className="mx-auto max-w-7xl">
           <h1 className="mb-1 text-2xl font-bold md:text-3xl">{activeMenu === "Sales Overview" ? "SALES OVERVIEW" : activeMenu === "AI Insight" ? "AI Insight" : "Penjualan BSJ"}</h1>
-          <p className="mb-6 text-sm text-slate-500 md:text-base">{activeMenu === "Sales Overview" ? "Versi Responsive HP & Tablet" : activeMenu === "AI Insight" ? "Insight AI" : "Ringkasan performa penjualan"}</p>
+          <p className="mb-6 text-sm text-slate-500 md:text-base">{activeMenu === "Sales Overview" ? "Achievement Omset & Collection" : activeMenu === "AI Insight" ? "Insight AI" : "Ringkasan performa penjualan"}</p>
 
           {/* KPI - di HP jadi 1 kolom, Tablet 2 kolom, Desktop 4 kolom */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -141,22 +150,23 @@ export default function App() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <Card>
               <Title>OMSET</Title>
-              {/* Tambah overflow biar tabel bisa di swipe di HP */}
-              <div className="overflow-x-auto mt-4">
-                <Table>
+              <div className="overflow-x-auto mt-4 -mx-6 px-6">
+                <Table className="w-full table-fixed">
                   <TableHead>
                     <TableRow>
-                      <TableHeaderCell>Nama</TableHeaderCell>
-                      <TableHeaderCell>Omset</TableHeaderCell>
-                      <TableHeaderCell>Coll</TableHeaderCell>
+                      <TableHeaderCell className="w-[35%] px-2 py-2 text-[11px] md:text-sm">Nama</TableHeaderCell>
+                      <TableHeaderCell className="px-2 py-2 text-[11px] md:text-sm">Target</TableHeaderCell>
+                      <TableHeaderCell className="px-2 py-2 text-[11px] md:text-sm">Actual</TableHeaderCell>
+                      <TableHeaderCell className="px-2 py-2 text-[11px] md:text-sm">Percent</TableHeaderCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {omsetData.map((s) => (
                       <TableRow key={s.nama}>
-                        <TableCell>{s.nama}</TableCell>
-                        <TableCell>{s.ach_omset}%</TableCell>
-                        <TableCell>{s.ach_coll}%</TableCell>
+                        <TableCell className="w-[35%] px-2 py-2 text-[11px] md:text-sm">{s.nama}</TableCell>
+                        <TableCell className="px-2 py-2 text-[11px] md:text-sm">{s.trg_omset}</TableCell>
+                        <TableCell className="px-2 py-2 text-[11px] md:text-sm">{s.ach_omset}</TableCell>
+                        <TableCell className="px-2 py-2 text-[11px] md:text-sm">{s.ach_percent}%</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -165,22 +175,23 @@ export default function App() {
             </Card>
             <Card>
               <Title>COLLECTION</Title>
-              {/* Tambah overflow biar tabel bisa di swipe di HP */}
-              <div className="overflow-x-auto mt-4">
-                <Table>
+              <div className="overflow-x-auto mt-4 -mx-6 px-6">
+                <Table className="w-full">
                   <TableHead>
                     <TableRow>
-                      <TableHeaderCell>Nama</TableHeaderCell>
-                      <TableHeaderCell>Omset</TableHeaderCell>
-                      <TableHeaderCell>Coll</TableHeaderCell>
+                      <TableHeaderCell className="w-[35%] px-2 py-2 text-[11px] md:text-sm">Nama</TableHeaderCell>
+                      <TableHeaderCell className="px-2 py-2 text-[11px] md:text-sm">Target</TableHeaderCell>
+                      <TableHeaderCell className="px-2 py-2 text-[11px] md:text-sm">Actual</TableHeaderCell>
+                      <TableHeaderCell className="px-2 py-2 text-[11px] md:text-sm">Percent</TableHeaderCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {omsetData.map((s) => (
+                    {collectionData.map((s) => (
                       <TableRow key={s.nama}>
-                        <TableCell>{s.nama}</TableCell>
-                        <TableCell>{s.ach_omset}%</TableCell>
-                        <TableCell>{s.ach_coll}%</TableCell>
+                        <TableCell className="w-[35%] px-2 py-2 text-[11px] md:text-sm">{s.nama}</TableCell>
+                        <TableCell className="px-2 py-2 text-[11px] md:text-sm">{s.trg_coll}</TableCell>
+                        <TableCell className="px-2 py-2 text-[11px] md:text-sm">{s.ach_coll}</TableCell>
+                        <TableCell className="px-2 py-2 text-[11px] md:text-sm">{s.ach_percent}%</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
