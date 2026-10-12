@@ -22,3 +22,22 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Tambahin aturan buat Python ETL
+echo "
+# Python ETL
+etl/venv/
+venv/
+etl/raw_data/
+__pycache__/
+*.pyc
+*.pyo
+.env
+etl/service-account.json
+" >> .gitignore
+
+# Cek hasilnya
+cat .gitignore
+
+# Cek apakah venv sudah ke-ignore
+git check-ignore -v etl/venv/
