@@ -40,4 +40,4 @@ etl/service-account.json
 cat .gitignore
 
 # Cek apakah venv sudah ke-ignore
-git check-ignore -v etl/venv/
+git check-ignore -v etl/venv/etl/credentials.json
