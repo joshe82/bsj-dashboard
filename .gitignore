@@ -41,3 +41,6 @@ cat .gitignore
 
 # Cek apakah venv sudah ke-ignore
 git check-ignore -v etl/venv/etl/credentials.json
+etl/credentials.json
+.env
+__pycache__/
