@@ -3,38 +3,31 @@ import { Card, Title, AreaChart, Table, TableHead, TableRow, TableHeaderCell, Ta
 import logo from "./assets/LogoBSJ.png";
 import { LayoutDashboard, PackageCheck, Database, ChevronDown } from "lucide-react";
 
-// Monthly sales and collection values displayed in the overview chart.
 const monthlyData = [
   { bulan: "Jan", omset: 120, collection: 100 },
   { bulan: "Feb", omset: 160, collection: 140 },
   { bulan: "Mar", omset: 180, collection: 170 },
   { bulan: "Apr", omset: 210, collection: 190 },
 ];
-
-// Sales target, achieved amount, and achievement percentage for each salesperson.
 const omsetData = [
   { nama: "Budi - Jabar", trg_omset: 94, ach_omset: 88, ach_percent: 93 },
   { nama: "Santi - Jateng", trg_omset: 120, ach_omset: 110, ach_percent: 92 },
   { nama: "Agus - Jatim", trg_omset: 66, ach_omset: 55, ach_percent: 83 },
 ];
-
-// Collection target, collected amount, and achievement percentage for each salesperson.
 const collectionData = [
   { nama: "Budi - Jabar", trg_coll: 100, ach_coll: 95, ach_percent: 95 },
   { nama: "Santi - Jateng", trg_coll: 150, ach_coll: 80, ach_percent: 53 },
   { nama: "Agus - Jatim", trg_coll: 95, ach_coll: 30, ach_percent: 32 },
 ];
 
-// Renders the dashboard, navigation, KPI cards, chart, and performance tables.
 export default function App() {
-  // Tracks the currently selected dashboard page.
   const [activeMenu, setActiveMenu] = useState("Sales Overview");
-  // Controls the mobile navigation drawer and its backdrop.
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  // Controls whether the Update Data submenu is expanded.
   const [updateOpen, setUpdateOpen] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [uploadType, setUploadType] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
 
-  // Defines the sidebar items, icons, and nested update pages.
   const menus = [
     { name: "Sales Overview", icon: LayoutDashboard },
     { name: "Product Achievement", icon: PackageCheck },
@@ -45,24 +38,41 @@ export default function App() {
     },
   ];
 
-  // Builds the responsive dashboard layout.
+  const handleChildClick = (childName) => {
+    // KALAU KLIK ANAK, BUKA POPUP, JANGAN PINDAH HALAMAN
+    setUploadType(childName);
+    setShowUploadModal(true);
+    setMobileMenuOpen(false);
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) return alert("Pilih file dulu!");
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+    formData.append("type", uploadType);
+    try {
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      if (res.ok) {
+        alert(`${uploadType} berhasil diupload!`);
+        setShowUploadModal(false);
+        setSelectedFile(null);
+      } else {
+        alert("Gagal upload");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error koneksi server");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 md:flex">
-      {/* Mobile menu toggle button. */}
-      <button
-        type="button"
-        className="fixed right-4 top-4 z-30 rounded-lg border border-slate-200 bg-white p-2 text-slate-700 shadow-sm md:hidden"
-        aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-        aria-expanded={mobileMenuOpen}
-        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-      >
-        <span className="text-xl leading-none">{mobileMenuOpen ? "âœ•" : "â˜°"}</span>
+      <button type="button" className="fixed right-4 top-4 z-30 rounded-lg border border-slate-200 bg-white p-2 text-slate-700 shadow-sm md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+        <span className="text-xl leading-none">{mobileMenuOpen ? "✕" : "☰"}</span>
       </button>
 
-      {/* Closes the mobile menu when the user taps outside the drawer. */}
-      {mobileMenuOpen && <button type="button" aria-label="Close menu" className="fixed inset-0 z-10 bg-slate-950/30 md:hidden" onClick={() => setMobileMenuOpen(false)} />}
+      {mobileMenuOpen && <button type="button" className="fixed inset-0 z-10 bg-slate-950/30 md:hidden" onClick={() => setMobileMenuOpen(false)} />}
 
-      {/* Sidebar branding and primary navigation. */}
       <aside className={`fixed inset-y-0 left-0 z-20 flex w-64 flex-col bg-slate-950 px-5 py-6 text-white transition-transform md:sticky md:top-0 md:h-screen md:translate-x-0 ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="mb-9 flex items-center gap-3">
           <div className="grid h-10 w-10 place-items-center rounded-xl bg-white font-bold">
@@ -73,16 +83,13 @@ export default function App() {
             <p className="text-xs text-slate-400">PT Buana Setia Jaya</p>
           </div>
         </div>
-        <p className="mb-3 px-3 text-xs font-semibold uppercase tracking-wider text-slate-500">Menu</p>
 
-        {/* Render each menu item and its optional nested pages. */}
-        <nav aria-label="Navigasi utama" className="space-y-1">
+        <p className="mb-3 px-3 text-xs font-semibold uppercase tracking-wider text-slate-500">Menu</p>
+        <nav className="space-y-1">
           {menus.map((menu) => {
             const Icon = menu.icon;
-            // Builds the responsive dashboard layout.
             return (
               <div key={menu.name}>
-                {/* Main navigation item and its selection behavior. */}
                 <button
                   type="button"
                   onClick={() => {
@@ -103,23 +110,13 @@ export default function App() {
                     </span>
                     {menu.name}
                   </span>
-
                   {menu.children && <ChevronDown size={14} className={`transition-transform ${updateOpen ? "rotate-180" : ""}`} />}
                 </button>
 
-                {/* Nested pages shown when the Update Data menu is expanded. */}
                 {menu.children && updateOpen && (
                   <div className="ml-8 mt-1 space-y-1 border-l border-slate-800 pl-3">
                     {menu.children.map((child) => (
-                      <button
-                        key={child}
-                        type="button"
-                        onClick={() => {
-                          setActiveMenu(child);
-                          setMobileMenuOpen(false);
-                        }}
-                        className={`flex w-full rounded-md px-3 py-2 text-left text-sm transition ${activeMenu === child ? "bg-slate-800 text-white" : "text-slate-400 hover:text-white"}`}
-                      >
+                      <button key={child} type="button" onClick={() => handleChildClick(child)} className="flex w-full rounded-md px-3 py-2 text-left text-sm text-slate-400 hover:text-white hover:bg-slate-800 transition">
                         {child}
                       </button>
                     ))}
@@ -264,6 +261,29 @@ export default function App() {
           </div>
         </div>
       </main>
+      {showUploadModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-bold text-lg">Upload {uploadType}</h3>
+              <button onClick={() => setShowUploadModal(false)}>✕</button>
+            </div>
+
+            <p className="text-sm text-gray-500 mb-3">Upload file Excel untuk {uploadType}. File akan disimpan di server.</p>
+
+            <input type="file" accept=".xlsx,.xls,.csv" onChange={(e) => setSelectedFile(e.target.files[0])} className="w-full border-2 border-dashed rounded-lg p-4 mb-4" />
+
+            <div className="flex gap-2 justify-end">
+              <button onClick={() => setShowUploadModal(false)} className="px-4 py-2 rounded-lg bg-gray-100">
+                Batal
+              </button>
+              <button onClick={handleUpload} className="px-4 py-2 rounded-lg bg-blue-600 text-white">
+                Upload ke Server
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
