@@ -44,3 +44,5 @@ git check-ignore -v etl/venv/etl/credentials.json
 etl/credentials.json
 .env
 __pycache__/
+etl/cleaned_data/
+etl/__pycache__/

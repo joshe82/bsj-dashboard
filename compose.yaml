@@ -1,0 +1,31 @@
+name: bsj-dashboard
+
+services:
+  etl-api:
+    build: ./etl
+    container_name: bsj-etl-api
+    ports:
+      - "8001:8000"
+    volumes:
+      - /data/bsj-raw-data:/app/data
+      - ./etl:/app
+    environment:
+      - DATA_PATH=/app/data
+    networks:
+      - shared-net
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: bsj-dashboard-web
+    ports:
+      - "3000:80"
+    networks:
+      - shared-net
+    depends_on:
+      - etl-api
+    restart: unless-stopped
+
+networks:
+  shared-net:
+    external: true
