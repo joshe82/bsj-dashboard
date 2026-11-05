@@ -1,6 +1,7 @@
-import { useState } from "react";
-import { Card, Title, AreaChart, BarChart, Table, TableHead, TableRow, TableHeaderCell, TableBody, TableCell, Metric, Text, DonutChart, Flex, ProgressBar } from "@tremor/react";
+﻿import { useState } from "react";
+import { Card, Title, AreaChart, Table, TableHead, TableRow, TableHeaderCell, TableBody, TableCell, Metric, Text, Flex, ProgressBar } from "@tremor/react";
 import logo from "./assets/LogoBSJ.png";
+import { LayoutDashboard, PackageCheck, Database, ChevronDown } from "lucide-react";
 
 const monthlyData = [
   { bulan: "Jan", omset: 120, collection: 100 },
@@ -8,13 +9,11 @@ const monthlyData = [
   { bulan: "Mar", omset: 180, collection: 170 },
   { bulan: "Apr", omset: 210, collection: 190 },
 ];
-
 const omsetData = [
   { nama: "Budi - Jabar", trg_omset: 94, ach_omset: 88, ach_percent: 93 },
   { nama: "Santi - Jateng", trg_omset: 120, ach_omset: 110, ach_percent: 92 },
   { nama: "Agus - Jatim", trg_omset: 66, ach_omset: 55, ach_percent: 83 },
 ];
-
 const collectionData = [
   { nama: "Budi - Jabar", trg_coll: 100, ach_coll: 95, ach_percent: 95 },
   { nama: "Santi - Jateng", trg_coll: 150, ach_coll: 80, ach_percent: 53 },
@@ -24,21 +23,55 @@ const collectionData = [
 export default function App() {
   const [activeMenu, setActiveMenu] = useState("Sales Overview");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const menus = ["Sales Overview", "Penjualan", "AI Insight"];
+  const [updateOpen, setUpdateOpen] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [uploadType, setUploadType] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
+
+  const menus = [
+    { name: "Sales Overview", icon: LayoutDashboard },
+    { name: "Product Achievement", icon: PackageCheck },
+    {
+      name: "Update Data",
+      icon: Database,
+      children: ["Sales Update", "Collection Update"],
+    },
+  ];
+
+  const handleChildClick = (childName) => {
+    // KALAU KLIK ANAK, BUKA POPUP, JANGAN PINDAH HALAMAN
+    setUploadType(childName);
+    setShowUploadModal(true);
+    setMobileMenuOpen(false);
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) return alert("Pilih file dulu!");
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+    formData.append("type", uploadType);
+    try {
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      if (res.ok) {
+        alert(`${uploadType} berhasil diupload!`);
+        setShowUploadModal(false);
+        setSelectedFile(null);
+      } else {
+        alert("Gagal upload");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error koneksi server");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 md:flex">
-      <button
-        type="button"
-        className="fixed right-4 top-4 z-30 rounded-lg border border-slate-200 bg-white p-2 text-slate-700 shadow-sm md:hidden"
-        aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-        aria-expanded={mobileMenuOpen}
-        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-      >
+      <button type="button" className="fixed right-4 top-4 z-30 rounded-lg border border-slate-200 bg-white p-2 text-slate-700 shadow-sm md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
         <span className="text-xl leading-none">{mobileMenuOpen ? "✕" : "☰"}</span>
       </button>
 
-      {mobileMenuOpen && <button type="button" aria-label="Close menu" className="fixed inset-0 z-10 bg-slate-950/30 md:hidden" onClick={() => setMobileMenuOpen(false)} />}
+      {mobileMenuOpen && <button type="button" className="fixed inset-0 z-10 bg-slate-950/30 md:hidden" onClick={() => setMobileMenuOpen(false)} />}
 
       <aside className={`fixed inset-y-0 left-0 z-20 flex w-64 flex-col bg-slate-950 px-5 py-6 text-white transition-transform md:sticky md:top-0 md:h-screen md:translate-x-0 ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="mb-9 flex items-center gap-3">
@@ -50,34 +83,59 @@ export default function App() {
             <p className="text-xs text-slate-400">PT Buana Setia Jaya</p>
           </div>
         </div>
+
         <p className="mb-3 px-3 text-xs font-semibold uppercase tracking-wider text-slate-500">Menu</p>
-        <nav aria-label="Navigasi utama" className="space-y-1">
-          {menus.map((menu, index) => (
-            <button
-              key={menu}
-              type="button"
-              onClick={() => {
-                setActiveMenu(menu);
-                setMobileMenuOpen(false);
-              }}
-              className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition ${activeMenu === menu ? "bg-indigo-500 text-white" : "text-slate-300 hover:bg-slate-800 hover:text-white"}`}
-            >
-              <span aria-hidden="true" className="w-5 text-center">
-                {index === 0 ? "🏠" : index === 1 ? "📊" : "🤖"}
-              </span>
-              {menu}
-            </button>
-          ))}
+        <nav className="space-y-1">
+          {menus.map((menu) => {
+            const Icon = menu.icon;
+            return (
+              <div key={menu.name}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (menu.children) {
+                      setUpdateOpen(!updateOpen);
+                    } else {
+                      setActiveMenu(menu.name);
+                      setMobileMenuOpen(false);
+                    }
+                  }}
+                  className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition ${
+                    activeMenu === menu.name || (menu.children && menu.children.includes(activeMenu)) ? "bg-indigo-500 text-white" : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                  }`}
+                >
+                  <span className="flex items-center gap-3">
+                    <span className="w-5 flex justify-center">
+                      <Icon size={18} className="shrink-0" />
+                    </span>
+                    {menu.name}
+                  </span>
+                  {menu.children && <ChevronDown size={14} className={`transition-transform ${updateOpen ? "rotate-180" : ""}`} />}
+                </button>
+
+                {menu.children && updateOpen && (
+                  <div className="ml-8 mt-1 space-y-1 border-l border-slate-800 pl-3">
+                    {menu.children.map((child) => (
+                      <button key={child} type="button" onClick={() => handleChildClick(child)} className="flex w-full rounded-md px-3 py-2 text-left text-sm text-slate-400 hover:text-white hover:bg-slate-800 transition">
+                        {child}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </nav>
-        <p className="mt-auto px-3 text-xs text-slate-500">© 2026 BSJ</p>
+        <p className="mt-auto px-3 text-xs text-slate-500">created by Joseph - 2026 BSJ</p>
       </aside>
 
+      {/* Main content area for the selected dashboard page. */}
       <main className="min-w-0 flex-1 p-4 pt-16 md:p-6 lg:p-8">
         <div className="mx-auto max-w-7xl">
-          <h1 className="mb-1 text-2xl font-bold md:text-3xl">{activeMenu === "Sales Overview" ? "SALES OVERVIEW" : activeMenu === "AI Insight" ? "AI Insight" : "Penjualan BSJ"}</h1>
-          <p className="mb-6 text-sm text-slate-500 md:text-base">{activeMenu === "Sales Overview" ? "Achievement Omset & Collection" : activeMenu === "AI Insight" ? "Insight AI" : "Ringkasan performa penjualan"}</p>
+          <h1 className="mb-1 text-2xl font-bold md:text-3xl">{activeMenu}</h1>
+          <p className="mb-6 text-sm text-slate-500">Halaman {activeMenu}</p>
 
-          {/* KPI - di HP jadi 1 kolom, Tablet 2 kolom, Desktop 4 kolom */}
+          {/* KPI cards summarize total sales and collection performance. */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <Card className="flex flex-col justify-between">
               <div>
@@ -140,14 +198,15 @@ export default function App() {
             </Card>
           </div>
 
-          {/* Chart Utama - selalu full width */}
+          {/* Monthly area chart comparing sales and collection. */}
           <Card className="mb-6">
             <Title>Omset vs Collection</Title>
             <AreaChart className="h-64 md:h-72 mt-4" data={monthlyData} index="bulan" categories={["omset", "collection"]} colors={["indigo", "emerald"]} />
           </Card>
 
-          {/* Bawah - di HP numpuk ke bawah, di Desktop baru sebelahan */}
+          {/* Performance tables stack on small screens and sit side by side on larger screens. */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            {/* Sales performance table. */}
             <Card>
               <Title>OMSET</Title>
               <div className="overflow-x-auto mt-4 -mx-6 px-6">
@@ -173,6 +232,7 @@ export default function App() {
                 </Table>
               </div>
             </Card>
+            {/* Collection performance table. */}
             <Card>
               <Title>COLLECTION</Title>
               <div className="overflow-x-auto mt-4 -mx-6 px-6">
@@ -201,6 +261,29 @@ export default function App() {
           </div>
         </div>
       </main>
+      {showUploadModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-bold text-lg">Upload {uploadType}</h3>
+              <button onClick={() => setShowUploadModal(false)}>✕</button>
+            </div>
+
+            <p className="text-sm text-gray-500 mb-3">Upload file Excel untuk {uploadType}. File akan disimpan di server.</p>
+
+            <input type="file" accept=".xlsx,.xls,.csv" onChange={(e) => setSelectedFile(e.target.files[0])} className="w-full border-2 border-dashed rounded-lg p-4 mb-4" />
+
+            <div className="flex gap-2 justify-end">
+              <button onClick={() => setShowUploadModal(false)} className="px-4 py-2 rounded-lg bg-gray-100">
+                Batal
+              </button>
+              <button onClick={handleUpload} className="px-4 py-2 rounded-lg bg-blue-600 text-white">
+                Upload ke Server
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

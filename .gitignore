@@ -1,3 +1,5 @@
+# 1. Reset dulu .gitignore kamu ke versi clean
+cat > .gitignore << 'EOF'
 # Logs
 logs
 *.log
@@ -12,7 +14,7 @@ dist
 dist-ssr
 *.local
 
-# Editor directories and files
+# Editor
 .vscode/*
 !.vscode/extensions.json
 .idea
@@ -23,26 +25,29 @@ dist-ssr
 *.sln
 *.sw?
 
-# Tambahin aturan buat Python ETL
-echo "
-# Python ETL
+# Frontend
+frontend/node_modules
+frontend/.next
+frontend/out
+
+# Python ETL - JANGAN DI PUSH
 etl/venv/
 venv/
 etl/raw_data/
+etl/cleaned_data/
+**/incoming/
+**/processed/
 __pycache__/
 *.pyc
 *.pyo
+*.pkl
 .env
 etl/service-account.json
-" >> .gitignore
-
-# Cek hasilnya
-cat .gitignore
-
-# Cek apakah venv sudah ke-ignore
-git check-ignore -v etl/venv/etl/credentials.json
 etl/credentials.json
-.env
-__pycache__/
-etl/cleaned_data/
-etl/__pycache__/
+*.xlsx
+*.xls
+*.csv
+!**/sample*.xlsx
+EOF
+
+cat .gitignore
