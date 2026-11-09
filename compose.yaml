@@ -1,31 +1,33 @@
 name: bsj-dashboard
 
 services:
-  etl-api:
-    build: ./etl
-    container_name: bsj-etl-api
+  backend:
+    build: ./backend
+    container_name: bsj-backend
     ports:
       - "8001:8000"
     volumes:
       - /data/bsj-raw-data:/app/data
-      - ./etl:/app
     environment:
       - DATA_PATH=/app/data
     networks:
-      - shared-net
+      - bsj-net
     restart: unless-stopped
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        - VITE_API_URL=http://localhost:8001
     container_name: bsj-dashboard-web
     ports:
       - "3000:80"
     networks:
-      - shared-net
+      - bsj-net
     depends_on:
-      - etl-api
+      - backend
     restart: unless-stopped
 
 networks:
-  shared-net:
-    external: true
+  bsj-net:
+    driver: bridge
