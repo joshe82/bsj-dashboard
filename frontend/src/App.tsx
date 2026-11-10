@@ -3,31 +3,37 @@ import { Card, Title, AreaChart, Table, TableHead, TableRow, TableHeaderCell, Ta
 import logo from "./assets/LogoBSJ.png";
 import { LayoutDashboard, PackageCheck, Database, ChevronDown } from "lucide-react";
 
+// Sample monthly sales data used by the trend chart.
 const monthlyData = [
   { bulan: "Jan", omset: 120, collection: 100 },
   { bulan: "Feb", omset: 160, collection: 140 },
   { bulan: "Mar", omset: 180, collection: 170 },
   { bulan: "Apr", omset: 210, collection: 190 },
 ];
+
+// Sales achievement dataset displayed in the sales performance table.
 const omsetData = [
   { nama: "Budi - Jabar", trg_omset: 94, ach_omset: 88, ach_percent: 93 },
   { nama: "Santi - Jateng", trg_omset: 120, ach_omset: 110, ach_percent: 92 },
   { nama: "Agus - Jatim", trg_omset: 66, ach_omset: 55, ach_percent: 83 },
 ];
+// Collection achievement dataset displayed in the collection performance table.
 const collectionData = [
   { nama: "Budi - Jabar", trg_coll: 100, ach_coll: 95, ach_percent: 95 },
   { nama: "Santi - Jateng", trg_coll: 150, ach_coll: 80, ach_percent: 53 },
   { nama: "Agus - Jatim", trg_coll: 95, ach_coll: 30, ach_percent: 32 },
 ];
 
+// Main dashboard layout and feature logic for sales monitoring and data update flow.
 export default function App() {
   const [activeMenu, setActiveMenu] = useState("Sales Overview");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [updateOpen, setUpdateOpen] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadType, setUploadType] = useState("");
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
+  // Sidebar navigation items for the dashboard pages and nested update actions.
   const menus = [
     { name: "Sales Overview", icon: LayoutDashboard },
     { name: "Product Achievement", icon: PackageCheck },
@@ -38,13 +44,15 @@ export default function App() {
     },
   ];
 
-  const handleChildClick = (childName) => {
+  // Open the upload modal when the user chooses a nested data update menu item.
+  const handleChildClick = (childName:string) => {
     // KALAU KLIK ANAK, BUKA POPUP, JANGAN PINDAH HALAMAN
     setUploadType(childName);
     setShowUploadModal(true);
     setMobileMenuOpen(false);
   };
 
+  // Submit selected Excel/CSV data to the API and show upload feedback.
   const handleUpload = async () => {
     if (!selectedFile) return alert("Pilih file dulu!");
     const formData = new FormData();
@@ -67,12 +75,14 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 md:flex">
+      {/* Mobile menu toggle for small screens. */}
       <button type="button" className="fixed right-4 top-4 z-30 rounded-lg border border-slate-200 bg-white p-2 text-slate-700 shadow-sm md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
         <span className="text-xl leading-none">{mobileMenuOpen ? "✕" : "☰"}</span>
       </button>
 
       {mobileMenuOpen && <button type="button" className="fixed inset-0 z-10 bg-slate-950/30 md:hidden" onClick={() => setMobileMenuOpen(false)} />}
 
+      {/* Dashboard sidebar navigation with menu and submenu state. */}
       <aside className={`fixed inset-y-0 left-0 z-20 flex w-64 flex-col bg-slate-950 px-5 py-6 text-white transition-transform md:sticky md:top-0 md:h-screen md:translate-x-0 ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="mb-9 flex items-center gap-3">
           <div className="grid h-10 w-10 place-items-center rounded-xl bg-white font-bold">
@@ -129,13 +139,13 @@ export default function App() {
         <p className="mt-auto px-3 text-xs text-slate-500">created by Joseph - 2026 BSJ</p>
       </aside>
 
-      {/* Main content area for the selected dashboard page. */}
+      {/* Main dashboard content area for the selected page and KPI summary. */}
       <main className="min-w-0 flex-1 p-4 pt-16 md:p-6 lg:p-8">
         <div className="mx-auto max-w-7xl">
           <h1 className="mb-1 text-2xl font-bold md:text-3xl">{activeMenu}</h1>
           <p className="mb-6 text-sm text-slate-500">Halaman {activeMenu}</p>
 
-          {/* KPI cards summarize total sales and collection performance. */}
+          {/* KPI cards summarize total sales and collection performance for the selected period. */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <Card className="flex flex-col justify-between">
               <div>
@@ -261,6 +271,7 @@ export default function App() {
           </div>
         </div>
       </main>
+      {/* Upload dialog used to import Excel or CSV data for sales and collection updates. */}
       {showUploadModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]">
           <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl">
@@ -271,8 +282,7 @@ export default function App() {
 
             <p className="text-sm text-gray-500 mb-3">Upload file Excel untuk {uploadType}. File akan disimpan di server.</p>
 
-            <input type="file" accept=".xlsx,.xls,.csv" onChange={(e) => setSelectedFile(e.target.files[0])} className="w-full border-2 border-dashed rounded-lg p-4 mb-4" />
-
+            <input type="file" accept=".xlsx,.xls,.csv" onChange={(e) => { const f = e.target.files?.[0]; if (f) setSelectedFile(f); }} className="w-full border-2 border-dashed rounded-lg p-4 mb-4" />
             <div className="flex gap-2 justify-end">
               <button onClick={() => setShowUploadModal(false)} className="px-4 py-2 rounded-lg bg-gray-100">
                 Batal

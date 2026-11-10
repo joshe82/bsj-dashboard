@@ -7,7 +7,7 @@ services:
     ports:
       - "8001:8000"
     volumes:
-      - /data/bsj-raw-data:/app/data
+      - ./bsj-raw-data:/app/data
     environment:
       - DATA_PATH=/app/data
     networks:
